@@ -3,6 +3,7 @@ package tw.org.iii.android_imagerecognition;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SwitchCompat;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
@@ -34,7 +35,7 @@ import java.util.Set;
 public class MainActivity extends AppCompatActivity {
     private ImageView imageView;
     private File sdroot;
-    private Switch fswitch;
+    private SwitchCompat fswitch;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -109,8 +110,11 @@ public class MainActivity extends AppCompatActivity {
         startActivityForResult(intent, 1);
     }
 
+    private Uri photoUri;
     public void test2(View view) {
-        Uri photoUri = FileProvider.getUriForFile(this, getPackageName() + ".provider",
+        photoUri = FileProvider.getUriForFile(
+                this,
+                getPackageName() +".provider",
                 new File(sdroot, "iii.jpg"));
 //        Uri photoUri2 = Uri.fromFile(new File(sdroot, "iii2.jpg"));
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
@@ -136,10 +140,10 @@ public class MainActivity extends AppCompatActivity {
         }
         //抓原圖
         else if (requestCode == 2 && requestCode == RESULT_OK) {
-            Bitmap bitmap = BitmapFactory.decodeFile(sdroot.getAbsolutePath() + "/iii.jpg");
-            imageView.setImageBitmap(bitmap);
+//            Bitmap bitmap = BitmapFactory.decodeFile(sdroot.getAbsolutePath() + "/iii.jpg");
+//            imageView.setImageBitmap(bitmap);
 
-//            if (photoUri != null) imageView.setImageBitmap(photoUri);
+            if (photoUri != null) imageView.setImageURI(photoUri);
         }
     }
 
