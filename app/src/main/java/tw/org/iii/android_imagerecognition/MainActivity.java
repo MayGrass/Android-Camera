@@ -29,7 +29,21 @@ import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.Switch;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.ml.vision.FirebaseVision;
+import com.google.firebase.ml.vision.common.FirebaseVisionImage;
+import com.google.firebase.ml.vision.common.FirebaseVisionImageMetadata;
+import com.google.firebase.ml.vision.text.FirebaseVisionText;
+import com.google.firebase.ml.vision.text.FirebaseVisionTextRecognizer;
+
 import java.io.File;
+import java.io.Serializable;
 import java.util.Set;
 
 public class MainActivity extends AppCompatActivity {
@@ -86,6 +100,24 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+
+        // Read from the database
+        myRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                // This method is called once with the initial value and again
+                // whenever data at this location is updated.
+                Bike bike2 = (Bike)dataSnapshot.getValue(Bike.class); // Using HashMap
+
+                Log.v("DCH", bike.name+ ":" +bike.speed);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError error) {
+                // Failed to read value
+                Log.v("DCH", "Failed to read value.", error.toException());
+            }
+        });
     }
 
     private void lightOn() {
@@ -140,10 +172,28 @@ public class MainActivity extends AppCompatActivity {
         }
         //抓原圖
         else if (requestCode == 2 && requestCode == RESULT_OK) {
-//            Bitmap bitmap = BitmapFactory.decodeFile(sdroot.getAbsolutePath() + "/iii.jpg");
-//            imageView.setImageBitmap(bitmap);
+            Bitmap bitmap = BitmapFactory.decodeFile(sdroot.getAbsolutePath() + "/iii.jpg");
+            imageView.setImageBitmap(bitmap);
+//            if (photoUri != null) imageView.setImageURI(photoUri);
+            FirebaseVisionImage image = FirebaseVisionImage.fromBitmap(bitmap);
+            FirebaseVisionImageMetadata metadata = new FirebaseVisionImageMetadata.Builder()
+                    .setWidth(480)   // 480x360 is typically sufficient for
+                    .setHeight(360)  // image recognition
+                    .setFormat(FirebaseVisionImageMetadata.IMAGE_FORMAT_NV21)
+                    .setRotation(FirebaseVisionImageMetadata.ROTATION_0)
+                    .build();
+            FirebaseVisionTextRecognizer textRecognizer = FirebaseVision.getInstance()
+                    .getOnDeviceTextRecognizer();
+            Task<FirebaseVisionText> task = textRecognizer.processImage(image);
+            task.addOnCompleteListener(new OnCompleteListener<FirebaseVisionText>() {
+                @Override
+                public void onComplete(@NonNull Task<FirebaseVisionText> task) {
+                    FirebaseVisionText result = task.getResult();
+                    String text = result.getText();
+                    Log.v("DCH", text);
 
-            if (photoUri != null) imageView.setImageURI(photoUri);
+                }
+            });
         }
     }
 
@@ -155,5 +205,16 @@ public class MainActivity extends AppCompatActivity {
         else {
             vibrator.vibrate(1*1000);
         }
+    }
+    private FirebaseDatabase database = FirebaseDatabase.getInstance();
+    private DatabaseReference myRef = database.getReference("message");
+    private DatabaseReference myBike = database.getReference("bike");
+    private Bike bike = new Bike();
+    public void databasetest(View view) {
+        // Write a message to the database
+        myRef.setValue("Hello, World!");
+        bike.setName("DCH");
+        bike.upSpeed();bike.upSpeed();bike.upSpeed();bike.upSpeed();
+        myBike.setValue(bike);
     }
 }

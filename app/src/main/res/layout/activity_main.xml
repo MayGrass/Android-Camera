@@ -23,8 +23,14 @@
     <Button
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="test3"
+        android:text="震動一下"
         android:onClick="test3"
+        />
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="資料庫測試"
+        android:onClick="databasetest"
         />
     <androidx.appcompat.widget.SwitchCompat
         android:id="@+id/FLswitch"
