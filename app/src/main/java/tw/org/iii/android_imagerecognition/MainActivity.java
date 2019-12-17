@@ -5,21 +5,27 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
 
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 
+import java.io.File;
 import java.util.Set;
 
 public class MainActivity extends AppCompatActivity {
     private ImageView imageView;
+    private File sdroot;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,6 +58,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void init(){
+        sdroot = Environment.getExternalStorageDirectory();
         imageView = findViewById(R.id.img);
     }
 
@@ -61,8 +68,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void test2(View view) {
+        Uri photoUri = FileProvider.getUriForFile(this, getPackageName() + ".provider",
+                new File(sdroot, "iii.jpg"));
+//        Uri photoUri2 = Uri.fromFile(new File(sdroot, "iii2.jpg"));
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri);
         startActivityForResult(intent, 2);
     }
 
@@ -80,6 +90,11 @@ public class MainActivity extends AppCompatActivity {
 //            }
             //抓縮圖
             Bitmap bitmap = (Bitmap) bundle.get("data");
+            imageView.setImageBitmap(bitmap);
+        }
+        //抓原圖
+        else if (requestCode == 2 && requestCode == RESULT_OK) {
+            Bitmap bitmap = BitmapFactory.decodeFile(sdroot.getAbsolutePath() + "/iii.jpg");
             imageView.setImageBitmap(bitmap);
         }
     }
