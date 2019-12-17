@@ -61,6 +61,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void test2(View view) {
+        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+
+        startActivityForResult(intent, 2);
     }
 
     @Override
