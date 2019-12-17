@@ -8,17 +8,25 @@ import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.hardware.camera2.CameraAccessException;
+import android.hardware.camera2.CameraManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
+import android.widget.CompoundButton;
 import android.widget.ImageView;
+import android.widget.Switch;
 
 import java.io.File;
 import java.util.Set;
@@ -26,6 +34,7 @@ import java.util.Set;
 public class MainActivity extends AppCompatActivity {
     private ImageView imageView;
     private File sdroot;
+    private Switch fswitch;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,9 +66,42 @@ public class MainActivity extends AppCompatActivity {
         init();
     }
 
+    private CameraManager cmgr;
+    private Vibrator vibrator;
     private void init(){
+        cmgr = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
+        vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
         sdroot = Environment.getExternalStorageDirectory();
         imageView = findViewById(R.id.img);
+        fswitch = findViewById(R.id.FLswitch);
+        fswitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if(isChecked) {
+                    lightOn();
+                }
+                else {
+                    lightOff();
+                }
+            }
+        });
+    }
+
+    private void lightOn() {
+        try {
+            cmgr.setTorchMode("0", true);
+        } catch (Exception e) {
+
+        }
+    }
+
+    private void lightOff() {
+        try {
+            cmgr.setTorchMode("0", false);
+        } catch (Exception e) {
+
+        }
+
     }
 
     public void StartCamera(View view) {
@@ -96,6 +138,18 @@ public class MainActivity extends AppCompatActivity {
         else if (requestCode == 2 && requestCode == RESULT_OK) {
             Bitmap bitmap = BitmapFactory.decodeFile(sdroot.getAbsolutePath() + "/iii.jpg");
             imageView.setImageBitmap(bitmap);
+
+//            if (photoUri != null) imageView.setImageBitmap(photoUri);
+        }
+    }
+
+    public void test3(View view) {
+        //分新版舊版的東西
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            vibrator.vibrate(VibrationEffect.createOneShot(1*1000, VibrationEffect.DEFAULT_AMPLITUDE));
+        }
+        else {
+            vibrator.vibrate(1*1000);
         }
     }
 }
